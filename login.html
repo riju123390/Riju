@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login & Signup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .checkbox-label input {
+            margin-right: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        .toggle {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .toggle a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #welcome-message {
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .logout-btn {
+            margin-top: 20px;
+            background-color: red;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 12px;
+            color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="auth-container">
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Username" />
+            <div class="password-container">
+                <input type="password" id="login-password" placeholder="Password" />
+                <span class="toggle-password" onclick="togglePassword('login-password')">Show</span>
+            </div>
+            <label class="checkbox-label">
+                <input type="checkbox" id="remember-me" /> Remember Me
+            </label>
+            <button onclick="login()">Login</button>
+            <div class="toggle">
+                Don't have an account? <a onclick="showSignup()">Create New Account</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" class="hidden">
+            <h2>Sign Up</h2>
+            <input type="text" id="signup-username" placeholder="Username" />
+            <input type="email" id="signup-email" placeholder="Email" />
+            <input type="tel" id="signup-mobile" placeholder="Mobile Number (10 digits)" />
+            <div class="password-container">
+                <input type="password" id="signup-password" placeholder="Password" />
+                <span class="toggle-password" onclick="togglePassword('signup-password')">Show</span>
+            </div>
+            <button onclick="signup()">Sign Up</button>
+            <div class="toggle">
+                Already have an account? <a onclick="showLogin()">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Page -->
+    <div class="container hidden" id="welcome-container">
+        <h2 id="welcome-message">Welcome!</h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        // Show/hide password toggle
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const toggle = field.nextElementSibling;
+            if (field.type === "password") {
+                field.type = "text";
+                toggle.innerText = "Hide";
+            } else {
+                field.type = "password";
+                toggle.innerText = "Show";
+            }
+        }
+
+        function showSignup() {
+            document.getElementById("login-form").classList.add("hidden");
+            document.getElementById("signup-form").classList.remove("hidden");
+        }
+
+        function showLogin() {
+            document.getElementById("signup-form").classList.add("hidden");
+            document.getElementById("login-form").classList.remove("hidden");
+        }
+
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function validateMobile(mobile) {
+            return /^[0-9]{10}$/.test(mobile);
+        }
+
+        function signup() {
+            const username = document.getElementById("signup-username").value.trim();
+            const email = document.getElementById("signup-email").value.trim();
+            const mobile = document.getElementById("signup-mobile").value.trim();
+            const password = document.getElementById("signup-password").value.trim();
+
+            if (!username || !email || !mobile || !password) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                alert("Invalid email format.");
+                return;
+            }
+
+            if (!validateMobile(mobile)) {
+                alert("Mobile number must be 10 digits.");
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            const existingUser = users.find(u => u.username === username);
+
+            if (existingUser) {
+                alert("Username already exists!");
+                return;
+            }
+
+            const newUser = { username, email, mobile, password };
+            users.push(newUser);
+            localStorage.setItem("users", JSON.stringify(users));
+
+            alert("Signup successful! You can now login.");
+            showLogin();
+        }
+
+        function login() {
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+            const rememberMe = document.getElementById("remember-me").checked;
+
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                if (rememberMe) {
+                    localStorage.setItem("rememberedUser", username);
+                } else {
+                    localStorage.removeItem("rememberedUser");
+                }
+
+                // Save current user info for the homepage
+                localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+                // Redirect to home.html
+                window.location.href = "index.html";
+            } else {
+                alert("Invalid username or password.");
+            }
+        }
+
+
+        function showWelcome(username) {
+            document.getElementById("auth-container").classList.add("hidden");
+            document.getElementById("welcome-container").classList.remove("hidden");
+            document.getElementById("welcome-message").innerText = `Welcome, ${username}!`;
+        }
+
+        function logout() {
+            document.getElementById("auth-container").classList.remove("hidden");
+            document.getElementById("welcome-container").classList.add("hidden");
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+        }
+
+        // Auto-fill remembered user
+        window.onload = function () {
+            const remembered = localStorage.getItem("rememberedUser");
+            if (remembered) {
+                document.getElementById("login-username").value = remembered;
+                document.getElementById("remember-me").checked = true;
+            }
+        };
+    </script>
+</body>
+
+</html>
